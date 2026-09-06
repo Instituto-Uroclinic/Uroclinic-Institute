@@ -1,0 +1,35 @@
+# Ignored files
+
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+.wrangler
+*.secret
+secrets/
+*.pem
+*.key
+
+# System
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+out/
+.public/
+
+# Editor
+.vscode/
+.idea/
+*.sublime-workspace
+
+# Misc
+coverage/
+*.log

@@ -1,0 +1,13 @@
+# Rellena account_id y otros valores en el entorno seguro; NO versiones con tokens en git.
+name = "uroclinic-org-redirect"
+main = "./worker.js"
+type = "javascript"
+
+# Rellenar solo en local/CI vía variables:
+# account_id = "YOUR_ACCOUNT_ID"
+# zone_id = "YOUR_ZONE_ID"
+# routes = ["drjovaniurologo.org/*", "www.drjovaniurologo.org/*"]
+
+# Environment to point at Pages canonical if needed
+[vars]
+CANONICAL = "https://uroclinic-drjovani.pages.dev"
