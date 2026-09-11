@@ -1,0 +1,65 @@
+name: UROCLINIC Cloudflare Bridge
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'bridge/cloudflare-*'
+    paths:
+      - '.github/workflows/uroclinic-cf-bridge.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verificar proyecto Cloudflare sin modificarlo
+        shell: bash
+        env:
+          CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          set +x
+          test -n "$CF_TOKEN" || {
+            echo "TOKEN=FALTA"; exit 1;
+          }
+          if [[ ! "$CF_ACCOUNT" =~ ^[a-fA-F0-9]{32}$ ]]; then
+            echo "ACCOUNT_ID=INVALIDO_DEBE_TENER_32_HEXADECIMALES"
+            exit 1
+          fi
+
+          RESPONSE="$RUNNER_TEMP/uroclinic-project.json"
+
+          CODE="$(
+            printf 'header = "Authorization: Bearer %s"\n' "$CF_TOKEN" |
+            curl --config - \
+              --silent --show-error \
+              --connect-timeout 10 --max-time 30 \
+              --output "$RESPONSE" \
+              --write-out '%{http_code}' \
+              "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/uroclinic-drjovani"
+          )"
+
+          echo "CLOUDFLARE_HTTP=$CODE"
+          if [ "$CODE" != "200" ]; then
+            echo "PUENTE=FAIL"
+            echo "Revisar token, cuenta y proyecto. Sin reintentos."
+            exit 1
+          fi
+
+          jq -e '
+            .success == true and
+            .result.name == "uroclinic-drjovani"
+          ' "$RESPONSE" >/dev/null
+
+          {
+            echo "PUENTE=PASS"
+            echo "PROJECT=uroclinic-drjovani"
+            echo "OPERACION=LECTURA_VERIFICADA"
+            echo "PERMISO_ESCRITURA=NO_PROBADO"
+            echo "PRODUCTION_CHANGES=NONE"
+          } | tee -a "$GITHUB_STEP_SUMMARY"
