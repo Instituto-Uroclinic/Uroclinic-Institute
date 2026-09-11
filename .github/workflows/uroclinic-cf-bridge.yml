@@ -2,6 +2,10 @@ name: UROCLINIC Cloudflare Bridge
 
 on:
   workflow_dispatch:
+    inputs:
+      cf_account:
+        description: 'Cloudflare account id to verify (optional)'
+        required: false
   push:
     branches:
       - 'bridge/cloudflare-*'
@@ -11,12 +15,21 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: 'uroclinic-cloudflare-bridge'
+  cancel-in-progress: true
+
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 3
+    timeout-minutes: 5
     steps:
-      - name: Verificar proyecto Cloudflare sin modificarlo
+      - name: Ensure safe shell options
+        run: |
+          set -euo pipefail
+          set +x
+
+      - name: Verify Cloudflare project (read-only)
         shell: bash
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -24,42 +37,51 @@ jobs:
         run: |
           set -euo pipefail
           set +x
-          test -n "$CF_TOKEN" || {
-            echo "TOKEN=FALTA"; exit 1;
-          }
+
+          test -n "$CF_TOKEN" || { echo "TOKEN=FALTA"; exit 2; }
+
           if [[ ! "$CF_ACCOUNT" =~ ^[a-fA-F0-9]{32}$ ]]; then
             echo "ACCOUNT_ID=INVALIDO_DEBE_TENER_32_HEXADECIMALES"
-            exit 1
+            exit 3
           fi
 
           RESPONSE="$RUNNER_TEMP/uroclinic-project.json"
 
-          CODE="$(
-            printf 'header = "Authorization: Bearer %s"\n' "$CF_TOKEN" |
-            curl --config - \
+          HTTP_CODE="$([
+            printf 'header = "Authorization: Bearer %s"\n' "$CF_TOKEN" \
+            | curl --config - \
               --silent --show-error \
               --connect-timeout 10 --max-time 30 \
               --output "$RESPONSE" \
               --write-out '%{http_code}' \
               "https://api.cloudflare.com/client/v4/accounts/$CF_ACCOUNT/pages/projects/uroclinic-drjovani"
-          )"
+          ] 2>/dev/null || echo "000")"
 
-          echo "CLOUDFLARE_HTTP=$CODE"
-          if [ "$CODE" != "200" ]; then
-            echo "PUENTE=FAIL"
-            echo "Revisar token, cuenta y proyecto. Sin reintentos."
-            exit 1
+          echo "CLOUDFLARE_HTTP=$HTTP_CODE"
+
+          if [ "$HTTP_CODE" = "200" ]; then
+            jq -e '.success == true and .result.name == "uroclinic-drjovani"' "$RESPONSE" >/dev/null || { echo "PUENTE=FAIL_JSON"; exit 5; }
+
+            {
+              echo "PUENTE=PASS"
+              echo "PROJECT=uroclinic-drjovani"
+              echo "OPERACION=LECTURA_VERIFICADA"
+              echo "PERMISO_ESCRITURA=NO_PROBADO"
+              echo "PRODUCTION_CHANGES=NONE"
+            } | tee -a "$GITHUB_STEP_SUMMARY"
+
+            # Clean up
+            rm -f "$RESPONSE" || true
+            exit 0
+          else
+            case "$HTTP_CODE" in
+              401|403)
+                echo "PUENTE=FAIL_AUTH; HTTP=$HTTP_CODE"; exit 4;;
+              404)
+                echo "PUENTE=FAIL_NOT_FOUND; HTTP=$HTTP_CODE"; exit 6;;
+              429|5*)
+                echo "PUENTE=FAIL_TEMPORAL; HTTP=$HTTP_CODE"; exit 7;;
+              *)
+                echo "PUENTE=FAIL_UNKNOWN; HTTP=$HTTP_CODE"; exit 8;;
+            esac
           fi
-
-          jq -e '
-            .success == true and
-            .result.name == "uroclinic-drjovani"
-          ' "$RESPONSE" >/dev/null
-
-          {
-            echo "PUENTE=PASS"
-            echo "PROJECT=uroclinic-drjovani"
-            echo "OPERACION=LECTURA_VERIFICADA"
-            echo "PERMISO_ESCRITURA=NO_PROBADO"
-            echo "PRODUCTION_CHANGES=NONE"
-          } | tee -a "$GITHUB_STEP_SUMMARY"
