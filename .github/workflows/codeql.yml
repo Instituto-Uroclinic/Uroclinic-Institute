@@ -21,7 +21,7 @@ jobs:
       contents: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
       - uses: github/codeql-action/init@f52b05f4acaaa234e44466e66d29050e135ea9ef
         with:
           languages: javascript-typescript
