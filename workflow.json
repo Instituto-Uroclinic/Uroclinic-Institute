@@ -4,16 +4,19 @@
       "parameters": {
         "httpMethod": "POST",
         "path": "uroclinic-neuroventas",
-        "options": {}
+        "responseMode": "responseNode",
+        "options": {
+          "rawBody": false
+        }
       },
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
-      "typeVersion": 1,
+      "typeVersion": 1.1,
       "position": [250, 300]
     },
     {
       "parameters": {
-        "jsCode": "const data = $input.item.json;\nconst mensaje = `🚨 *NUEVO LEAD - UROCLINIC* 🚨\\n\\n` +\n  `👤 *Nombre:* ${data.nombre || 'No especificado'}\\n` +\n  `📱 *Teléfono:* ${data.telefono || 'No especificado'}\\n` +\n  `💡 *Servicio:* ${data.servicio || 'General'}\\n` +\n  `📊 *Etapa:* ${data.etapa || 'Nuevo Lead'}\\n\\n` +\n  `⚡ *¡Atender de inmediato!*`;\n\nreturn { json: { chat_id: \"TU_CHAT_ID\", text: mensaje, parse_mode: \"Markdown\" } };"
+        "jsCode": "try {\n  const data = $input.item.json.body || $input.item.json;\n  const nombre = data.nombre || 'No especificado';\n  const telefono = data.telefono || 'No especificado';\n  const servicio = data.servicio || 'General';\n  const etapa = data.etapa || 'Nuevo Lead';\n\n  const mensaje = `🚨 *NUEVO LEAD - UROCLINIC* 🚨\\n\\n` +\n    `👤 *Nombre:* ${nombre}\\n` +\n    `📱 *Teléfono:* ${telefono}\\n` +\n    `💡 *Servicio:* ${servicio}\\n` +\n    `📊 *Etapa:* ${etapa}\\n\\n` +\n    `⚡ *¡Atender de inmediato!*`;\n\n  return [{ json: { chat_id: 'TU_CHAT_ID', text: mensaje, parse_mode: 'Markdown' } }];\n} catch (error) {\n  return [{ json: { chat_id: 'TU_CHAT_ID', text: `⚠️ Error procesando lead: ${error.message}`, parse_mode: 'Markdown' } }];\n}"
       },
       "name": "Formatear Mensaje",
       "type": "n8n-nodes-base.code",
