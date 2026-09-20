@@ -1,0 +1,9 @@
+@media (max-width: 720px) {
+  .mobile-cta {
+    grid-template-columns: .72fr .95fr 1.45fr;
+  }
+
+  .mobile-cta a {
+    padding-inline: 7px;
+  }
+}

@@ -1,0 +1,28 @@
+name = "uroclinic-dr-jovani"
+compatibility_date = "2026-09-20"
+main = "worker/index.js"
+
+[assets]
+directory = "./dist"
+binding = "ASSETS"
+not_found_handling = "single-page-application"
+
+[vars]
+GHL_API_VERSION = "2021-07-28"
+PUBLIC_ORIGIN = "https://www.drjovaniurologo.org"
+# TURNSTILE_SITE_KEY es público y se configura aquí al activar el widget.
+# TURNSTILE_SITE_KEY = ""
+# GHL_BOOKING_URL es la URL pública del calendario de HighLevel. Configúrala
+# en Cloudflare como variable normal para activar agenda inmediata en los CTA.
+# GHL_BOOKING_URL = "https://..."
+
+[observability]
+enabled = true
+
+[[ratelimits]]
+name = "LEAD_RATE_LIMITER"
+namespace_id = "1001"
+
+[ratelimits.simple]
+limit = 3
+period = 60

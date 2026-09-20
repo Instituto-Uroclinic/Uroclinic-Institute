@@ -1,0 +1,12 @@
+{
+  "name": "uroclinic-dr-jovani",
+  "version": "2.5.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "check": "node --check worker/index.js && node --check dist/assets/app.js"
+  },
+  "devDependencies": { "wrangler": "^4.40.0" }
+}
