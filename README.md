@@ -86,3 +86,6 @@ No requiere secretos. El workflow valida sintaxis y archivos esenciales. Los sec
 9. Google: Business Profile REST reference — https://developers.google.com/my-business/reference/rest
 10. OpenAI: API documentation / Responses — https://developers.openai.com/es-419/api/docs
 11. Google: Gemini API reference — https://ai.google.dev/api
+
+## 111X readiness note (2026-09-20)
+This ZIP is **not production-ready**. The runtime is Cloudflare Workers + Static Assets, not Astro SSR. Lead writes are fail-closed behind `LEAD_SUBMISSIONS_ENABLED`; production additionally requires a D1 `IDEMPOTENCY_DB`, Cloudflare runtime secrets, HighLevel duplicate-policy preflight, and preview verification. See `audit/FINAL-111X-EVIDENCE.md` and `DEPLOYMENT-CHECKLIST.md`. Documentation alone is not evidence of deployment.

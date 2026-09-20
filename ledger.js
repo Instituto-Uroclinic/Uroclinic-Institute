@@ -1,0 +1,7 @@
+export const STATES={RECEIVED:'RECEIVED',SECURITY_VERIFIED:'SECURITY_VERIFIED',TURNSTILE_VERIFIED:'TURNSTILE_VERIFIED',CRM_CONTACT_UPSERTED:'CRM_CONTACT_UPSERTED',CRM_TAGGED:'CRM_TAGGED',SECONDARY_NOTIFICATIONS_PROCESSED:'SECONDARY_NOTIFICATIONS_PROCESSED',COMPLETED:'COMPLETED',FAILED_RETRYABLE:'FAILED_RETRYABLE',FAILED_TERMINAL:'FAILED_TERMINAL'};
+export async function acquire(db,id,hash,now){
+  if(!db) return {ok:false,reason:'storage_unconfigured'};
+  try{await db.prepare(`INSERT INTO lead_submissions (submission_id,payload_hash,state,created_at,updated_at,retry_count) VALUES (?,?,?,?,?,0)`).bind(id,hash,STATES.RECEIVED,now,now).run();return {ok:true,fresh:true};}
+  catch{const row=await db.prepare(`SELECT submission_id,payload_hash,state,contact_id FROM lead_submissions WHERE submission_id=?`).bind(id).first();if(!row)return {ok:false,reason:'storage_error'};if(row.payload_hash!==hash)return {ok:false,reason:'payload_conflict'};if(row.state===STATES.COMPLETED)return {ok:true,fresh:false,completed:true,row};return {ok:false,reason:'in_flight',row};}
+}
+export async function transition(db,id,state,fields={}){const now=new Date().toISOString();const allowed=['contact_id','opportunity_id'];const extras=Object.entries(fields).filter(([k])=>allowed.includes(k));const sets=['state=?','updated_at=?',...extras.map(([k])=>`${k}=?`)];await db.prepare(`UPDATE lead_submissions SET ${sets.join(',')} WHERE submission_id=?`).bind(state,now,...extras.map(([,v])=>v),id).run();}

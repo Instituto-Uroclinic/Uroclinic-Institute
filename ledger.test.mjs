@@ -1,0 +1,4 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {acquire,STATES} from '../worker/lib/ledger.js';
+function db(){const rows=new Map();return {prepare(sql){let args=[];return {bind(...a){args=a;return this},async run(){if(sql.startsWith('INSERT')){if(rows.has(args[0]))throw Error('unique');rows.set(args[0],{submission_id:args[0],payload_hash:args[1],state:STATES.RECEIVED});}return{}},async first(){return rows.get(args[0])||null}}}}}
+test('same submission different payload conflicts',async()=>{const d=db();assert.equal((await acquire(d,'x','a','now')).fresh,true);assert.equal((await acquire(d,'x','b','now')).reason,'payload_conflict')});
+test('concurrent duplicate does not acquire twice',async()=>{const d=db();const [a,b]=await Promise.all([acquire(d,'x','a','now'),acquire(d,'x','a','now')]);assert.equal([a,b].filter(x=>x.fresh).length,1);assert.equal([a,b].filter(x=>x.reason==='in_flight').length,1)});

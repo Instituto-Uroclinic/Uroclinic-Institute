@@ -1,0 +1,12 @@
+# Build evidence — 2026-09-20
+- Node: v22.16.0 — PASS
+- npm: 10.9.2 — PASS
+- `npm run check` — PASS
+- `npm test` — PASS (4/4)
+- `npm run build` — PASS (14 static assets copied)
+- secret scan — PASS
+- Action SHA scan — PASS
+- `npm ci` — BLOCKED: uploaded ZIP has no `package-lock.json`; package metadata resolution could not complete in the execution environment.
+- `npx wrangler --version` — BLOCKED: Wrangler is not locally installed because dependency installation could not complete.
+- `git status` / `git diff --check` — BLOCKED: uploaded ZIP contains no `.git` metadata.
+- `npx astro check` — NOT_APPLICABLE: project is not Astro.

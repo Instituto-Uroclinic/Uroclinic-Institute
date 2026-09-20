@@ -35,6 +35,9 @@ form?.addEventListener('submit', async (event) => {
   const button = form.querySelector('button[type="submit"]');
   button.disabled = true; status.textContent = 'Enviando solicitud…'; status.className = 'form-status';
   const data = Object.fromEntries(new FormData(form)); data.consent = form.elements.consent.checked;
+  data.schema_version = '1';
+  data.submission_id = form.dataset.submissionId || crypto.randomUUID(); form.dataset.submissionId = data.submission_id;
+  data.privacy_notice_version = '2026-09-20'; data.consent_timestamp = new Date().toISOString();
   data.turnstile = data['cf-turnstile-response'] || '';
   const params = new URLSearchParams(location.search);
   data.source = ['utm_source','utm_medium','utm_campaign'].map((key) => params.get(key)).filter(Boolean).join(' / ').slice(0, 120);
@@ -42,7 +45,7 @@ form?.addEventListener('submit', async (event) => {
     const response = await fetch('/api/lead', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) });
     const result = await response.json();
     if (!response.ok) throw new Error(result.error || 'No se pudo enviar');
-    status.textContent = result.message; status.className = 'form-status success'; form.reset();
+    status.textContent = 'Solicitud recibida. El equipo confirmará disponibilidad.'; status.className = 'form-status success'; form.reset(); delete form.dataset.submissionId;
   } catch (error) {
     status.textContent = `${error.message}. También puedes llamar o escribir por WhatsApp al 871 385 2579.`; status.className = 'form-status error';
   } finally { button.disabled = false; if (window.turnstile) window.turnstile.reset(); }

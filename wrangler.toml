@@ -8,8 +8,9 @@ binding = "ASSETS"
 not_found_handling = "single-page-application"
 
 [vars]
-GHL_API_VERSION = "2021-07-28"
-PUBLIC_ORIGIN = "https://www.drjovaniurologo.org"
+ENVIRONMENT = "production"
+PUBLIC_ORIGIN = "https://drjovaniurologo.org"
+LEAD_SUBMISSIONS_ENABLED = "false"
 # TURNSTILE_SITE_KEY es público y se configura aquí al activar el widget.
 # TURNSTILE_SITE_KEY = ""
 # GHL_BOOKING_URL es la URL pública del calendario de HighLevel. Configúrala

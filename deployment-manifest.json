@@ -1,0 +1,10 @@
+{
+  "status": "PREPARATION_ONLY",
+  "gitSha": null,
+  "githubRunId": null,
+  "cloudflareDeploymentId": null,
+  "productionUrl": "https://drjovaniurologo.org",
+  "timestampUtc": "2026-09-20T09:50:00Z",
+  "artifactHashFile": "audit/artifact-sha256.txt",
+  "note": "No deployment performed; source ZIP contained no Git metadata."
+}

@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {buildUpsertPayload,ENDPOINTS} from '../worker/lib/highlevel.js';import {safeJson} from '../worker/lib/security.js';
+test('HighLevel upsert is v3 and excludes tags',()=>{const p=buildUpsertPayload({name:'A B C',phone:'+528711234567',email:'a@b.mx',city:'Torreon',source:'web'},{GHL_LOCATION_ID:'loc'});assert.equal(ENDPOINTS.contactUpsert.version,'v3');assert.equal(p.createNewIfDuplicateAllowed,false);assert.equal('tags' in p,false)});
+test('API responses are no-store',async()=>{const r=safeJson({ok:false},422);assert.equal(r.headers.get('cache-control'),'no-store');assert.equal(r.headers.get('x-content-type-options'),'nosniff')});

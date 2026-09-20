@@ -1,0 +1,7 @@
+{
+  "source": "HighLevel official API documentation checked 2026-09-20",
+  "endpoints": [
+    {"endpoint":"/contacts/upsert","method":"POST","version":"v3","officialRequiredScope":"contacts.write","usedBy":"lead saga","required":true},
+    {"endpoint":"/contacts/:contactId/tags","method":"POST","version":"v3","officialRequiredScope":"contacts.write","usedBy":"lead saga","required":true}
+  ]
+}
